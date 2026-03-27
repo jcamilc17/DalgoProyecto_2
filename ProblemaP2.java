@@ -45,12 +45,40 @@ public class ProblemaP2 {
         return new int[]{a, b};
     }
 
+    static int gcd(int a, int b) {
+        // Algoritmo de Euclides para calcular MCD
+        while (b != 0) {
+            // Guardamos el valor de b en una variable temporal
+            int t = b;
+            // Actualizamos b con el residuo de a dividido por b
+            b = a % b;
+            // Actualizamos a con el valor de t (el valor anterior de b)
+            a = t;
+        }
+        // Retornamos el valor de a, que es el MCD de ambos numeros
+        return a;
+    }
+
     static int minDiferencial(int[] diferenciales) {
         // Calculamos la suma total
         int S = 0;
         for (int d : diferenciales) S += d;
+
+        // Si S es 0, el diferencial es 0 directamente
+        if (S == 0) return 0;
+
+        // Calculamos el GCD de todos los diferenciales
+        int g = diferenciales[0];
+        for (int d : diferenciales) g = gcd(g, d);
+
+        // Dividimos todo por el GCD
+        S = S / g;
+        int[] reducidos = new int[diferenciales.length];
+        for (int i = 0; i < diferenciales.length; i++) {
+            reducidos[i] = diferenciales[i] / g;
+        }
         
-        // DP booleano
+        // DP booleano sobre los valores reducidos
         boolean[] dp = new boolean[S + 1];
         // Caso Base: suma 0 siempre es posible (por el conjunto vacio)
         dp[0] = true;
