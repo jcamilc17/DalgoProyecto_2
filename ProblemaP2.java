@@ -60,51 +60,61 @@ public class ProblemaP2 {
     }
 
     static int minDiferencial(int[] diferenciales) {
-        // Calculamos la suma total
+        // Suma total de los diferenciales
         int S = 0;
+        // Calculamos la suma total de los diferenciales
         for (int d : diferenciales) S += d;
-
-        // Si S es 0, el diferencial es 0 directamente
+        // Si la suma es 0, no hay diferencia, retornamos 0
         if (S == 0) return 0;
 
-        // Calculamos el GCD de todos los diferenciales
+        // GCD reduction
         int g = diferenciales[0];
+        // Calculamos el MCD de todos los diferenciales para reducir el problema
         for (int d : diferenciales) g = gcd(g, d);
-
-        // Dividimos todo por el GCD
+        // Reducimos S y los diferenciales dividiendolos por el MCD
         S = S / g;
-        int[] reducidos = new int[diferenciales.length];
-        for (int i = 0; i < diferenciales.length; i++) {
-            reducidos[i] = diferenciales[i] / g;
-        }
-        
-        // DP booleano sobre los valores reducidos
-        boolean[] dp = new boolean[S + 1];
-        // Caso Base: suma 0 siempre es posible (por el conjunto vacio)
+
+        // Frecuencias de cada diferencial reducido
+        int[] freq = new int[1001];
+        // Contamos la frecuencia de cada diferencial reducido
+        for (int d : diferenciales) freq[d / g]++;
+
+        // DP booleano solo hasta S/2
+        int target = S / 2;
+        // dp[j] indica si es posible formar la suma j con los diferenciales disponibles
+        boolean[] dp = new boolean[target + 1];
+        // Inicializamos dp[0] como verdadero, ya que siempre es posible formar la suma 0 sin usar ningun diferencial
         dp[0] = true;
-        
-        // Para cada diferencial, actualizamos el DP
-        for (int d : diferenciales) {
-            boolean[] nuevo = dp.clone(); // copia para no reusar el mismo diferencial
-            for (int j = d; j <= S; j++) {
-                nuevo[j] = dp[j] || dp[j - d];
+
+        // Bounded knapsack con triple for
+        for (int v = 1; v <= 1000; v++) {
+            // Si el diferencial v no esta presente, continuamos al siguiente valor
+            int maxVeces = freq[v];
+            // Si no hay diferenciales de valor v, no procesamos este valor
+            if (maxVeces == 0) continue;
+            for (int j = target; j >= v; j--) {
+                for (int k = 1; k <= maxVeces && k * v <= j; k++) {
+                    if (dp[j - k * v]) {
+                        // Si es posible formar la suma j-k*v, entonces es posible formar la suma j usando k diferenciales de valor v
+                        dp[j] = true;
+                        break; // booleano, con uno que llegue basta
+                    }
+                }
             }
-            // Actualizamos el DP con el nuevo estado
-            dp = nuevo;
+            if (dp[target]) break; // early stopping
         }
-        
+
         // Buscamos el j mas cercano a S/2
         int mejor = 0;
-        for (int j = S / 2; j >= 0; j--) {
-            // Si encontramos un j que es posible, lo guardamos como mejor y termina el ciclo
+        for (int j = target; j >= 0; j--) {
+            // Si dp[j] es verdadero, significa que es posible formar la suma j con los diferenciales disponibles
             if (dp[j]) {
                 mejor = j;
+                // Encontramos el j mas cercano a S/2 que se puede formar, lo guardamos en mejor y salimos del ciclo
                 break;
             }
         }
-        
-        // La diferencia minima es la diferencia entre el total y dos veces el mejor j encontrado
-        return Math.abs(2 * mejor - S);
+        return Math.abs(2 * mejor - S) * g;
     }
 
     public static void main(String[] args) {
@@ -132,7 +142,7 @@ public class ProblemaP2 {
                 int[] grupos = bfsBipartition(v, adj);
                 diferenciales[k] = Math.abs(grupos[0] - grupos[1]);
             }
-            
+            System.out.println(Arrays.toString(diferenciales));
             System.out.println(minDiferencial(diferenciales));
         }
     }
