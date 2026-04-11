@@ -142,7 +142,6 @@ public class ProblemaP2 {
                 int[] grupos = bfsBipartition(v, adj);
                 diferenciales[k] = Math.abs(grupos[0] - grupos[1]);
             }
-            System.out.println(Arrays.toString(diferenciales));
             System.out.println(minDiferencial(diferenciales));
         }
     }
